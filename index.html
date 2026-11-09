@@ -1,1 +1,106 @@
-
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dainhat Rash Guide 2026</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--green:#145c43;--deep:#0b382b;--cream:#f6f7f2;--ink:#18352b;--muted:#66766e}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans Bengali",sans-serif}
+header{background:linear-gradient(120deg,var(--deep),#1d7655);color:white;padding:22px 18px 18px}
+.wrap{max-width:1100px;margin:auto}header h1{font-size:clamp(23px,4vw,34px);margin:0 0 5px}header p{margin:0;color:#d8eee4}
+main{max-width:1100px;margin:18px auto;padding:0 14px}.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px}
+input,select,button{font:inherit;border-radius:11px;padding:11px 13px;border:1px solid #d3ddd6;background:white;color:var(--ink)}
+input{flex:1;min-width:180px}button{cursor:pointer;background:var(--green);color:white;border:0;font-weight:650}button.secondary{background:white;color:var(--green);border:1px solid #b9cfc2}
+.layout{display:grid;grid-template-columns: minmax(0,1.7fr) minmax(260px,1fr);gap:14px}
+.panel{background:white;border:1px solid #e0e8e2;border-radius:16px;overflow:hidden;box-shadow:0 5px 18px #173e2910}
+#map{height:560px;width:100%}.side{padding:14px}.side h2{font-size:18px;margin:0 0 10px}.chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.chip{border:1px solid #c9d9ce;border-radius:30px;padding:7px 10px;background:#f7faf7;color:#24563f;font-size:13px;cursor:pointer}
+.item{padding:11px 0;border-top:1px solid #edf1ed}.item strong{display:block}.item-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.item-actions button{font-size:13px;padding:8px 10px}.danger{background:#a83232!important;color:white!important;border:0!important}.chip.active{background:var(--green);color:white;border-color:var(--green)}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #8bc6a6;outline-offset:2px}.muted{font-size:13px;color:var(--muted);margin-top:3px}
+.admin{margin-top:15px;padding:14px}.admin h2{margin:0 0 8px}.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.formgrid input{min-width:0;width:100%}.formgrid button{grid-column:1/-1}
+.note{font-size:12px;color:var(--muted);line-height:1.5;margin:10px 0 0}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
+@media(max-width:760px){.layout{grid-template-columns:1fr}#map{height:420px}.formgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>DAINHAT RASH GUIDE 2026</h1><p>পুরো Dainhat-এর Rash Club, জরুরি পরিষেবা ও রাস্তার গাইড</p></div></header>
+<main>
+  <div class="toolbar">
+    <input id="search" placeholder="Club বা Theme-এর নাম খুঁজুন…" aria-label="Search clubs">
+    <button class="secondary" id="locate">আমার অবস্থান</button>
+    <button id="adminToggle">Admin Panel</button>
+  </div>
+  <div class="chips" id="filters">
+    <button class="chip" data-kind="all">সব</button>
+    <button class="chip" data-kind="club">Rash Club</button>
+    <button class="chip" data-kind="station">Railway Station</button>
+    <button class="chip" data-kind="bus">Bus Stand</button>
+    <button class="chip" data-kind="parking">Parking</button>
+    <button class="chip" data-kind="hospital">Hospital</button>
+    <button class="chip" data-kind="toilet">Public Toilet</button>
+  </div>
+  <div class="layout">
+    <section class="panel"><div id="map" role="application" aria-label="Dainhat map"></div></section>
+    <aside class="panel side">
+      <h2>কাছাকাছি ও তালিকা</h2>
+      <div id="list"><p class="muted">এখনও কোনো Club যোগ করা হয়নি। Admin Panel থেকে যোগ করলে এখানে দেখা যাবে।</p></div>
+    </aside>
+  </div>
+  <section class="panel admin" id="admin" hidden>
+    <h2>Admin Panel</h2>
+    <p class="muted">Demo PIN: <b>2468</b>। এটি নিরাপদ authentication নয়—শুধু পরীক্ষার জন্য। Public app-এ server-based login ব্যবহার করো।</p>
+    <div class="toolbar"><input id="pin" type="password" placeholder="Admin PIN"><button id="login">Login</button></div>
+    <div id="adminForm" hidden>
+      <div class="formgrid">
+        <input id="clubName" placeholder="Club-এর নাম">
+        <input id="themeName" placeholder="Theme-এর নাম">
+        <select id="category"><option value="club">Rash Club</option><option value="station">Railway Station</option><option value="bus">Bus Stand</option><option value="parking">Parking</option><option value="hospital">Hospital</option><option value="toilet">Public Toilet</option></select>
+        <input id="lat" type="number" step="any" placeholder="Latitude">
+        <input id="lng" type="number" step="any" placeholder="Longitude">
+        <button id="pick">Map-এ ক্লিক করে Location বাছুন</button>
+        <button id="save">Add Location</button>
+      </div>
+      <p class="note" id="pickStatus" aria-live="polite">Map-এ ক্লিক করে Location বাছুন, তারপর Map-এর নির্দিষ্ট জায়গায় ক্লিক করো। তথ্য এই browser-এ থাকবে; অন্য ফোনে Sync করতে online database লাগবে।</p>
+    </div>
+  </section>
+</main>
+<footer>Prototype • Map data © OpenStreetMap contributors</footer>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const map=L.map('map').setView([23.58,88.25],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const STORAGE_KEY='dainhatRashPoints';
+const labels={club:'Rash Club',station:'Railway Station',bus:'Bus Stand',parking:'Parking',hospital:'Hospital',toilet:'Public Toilet'};
+const $=id=>document.getElementById(id);
+let markers=[], activeFilter='all', picking=false;
+function validPoint(p){return p&&typeof p.name==='string'&&p.name.trim()&&Number.isFinite(Number(p.lat))&&Number.isFinite(Number(p.lng))&&Math.abs(Number(p.lat))<=90&&Math.abs(Number(p.lng))<=180&&Object.hasOwn(labels,p.category)}
+function loadPoints(){try{const data=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');return Array.isArray(data)?data.filter(validPoint).map(p=>({...p,lat:Number(p.lat),lng:Number(p.lng)})):[]}catch(err){console.warn('Saved location data could not be read:',err);return []}}
+let points=loadPoints();
+function persist(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(points));return true}catch(err){alert('এই ফোনে Data Save করা যায়নি। Browser storage space বা permission পরীক্ষা করো।');console.error(err);return false}}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function render(){
+ markers.forEach(m=>map.removeLayer(m));markers=[];
+ const q=$('search').value.trim().toLocaleLowerCase();
+ const shown=points.filter(p=>(activeFilter==='all'||p.category===activeFilter)&&(`${p.name} ${p.theme||''}`).toLocaleLowerCase().includes(q));
+ $('list').innerHTML=shown.length?shown.map(p=>`<div class="item"><strong>${esc(p.name)}</strong><div class="muted">${labels[p.category]}${p.theme?' · Theme: '+esc(p.theme):''}</div><div class="item-actions"><button class="secondary" onclick="goTo(${p.lat},${p.lng})">Map-এ দেখুন</button><button onclick="routeTo(${p.lat},${p.lng})">Directions</button>${!$('adminForm').hidden?`<button class="danger" onclick="deletePoint('${esc(String(p.id))}')">Delete</button>`:''}</div></div>`).join(''):'<p class="muted">কোনো Location পাওয়া যায়নি। Admin Panel থেকে Location যোগ করো।</p>';
+ shown.forEach(p=>{const m=L.marker([p.lat,p.lng]).addTo(map).bindPopup(`<b>${esc(p.name)}</b><br>${labels[p.category]}${p.theme?'<br>Theme: '+esc(p.theme):''}<br><a target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}">Directions খুলুন</a>`);markers.push(m)});
+ document.querySelectorAll('#filters [data-kind]').forEach(b=>b.classList.toggle('active',b.dataset.kind===activeFilter));
+}
+function goTo(lat,lng){map.setView([Number(lat),Number(lng)],17)}
+function routeTo(lat,lng){const url=`https://www.google.com/maps/dir/?api=1&destination=${Number(lat)},${Number(lng)}`;window.open(url,'_blank','noopener,noreferrer')}
+function deletePoint(id){if(!confirm('এই Location-টি Delete করতে চাও?'))return;const before=points.length;points=points.filter(p=>String(p.id)!==String(id));if(points.length!==before&&persist())render()}
+window.goTo=goTo;window.routeTo=routeTo;window.deletePoint=deletePoint;
+$('search').addEventListener('input',render);
+$('filters').addEventListener('click',e=>{const b=e.target.closest('[data-kind]');if(b){activeFilter=b.dataset.kind;render()}});
+$('locate').onclick=()=>{if(!navigator.geolocation)return alert('এই Browser-এ Location support নেই।');$('locate').disabled=true;navigator.geolocation.getCurrentPosition(pos=>{map.setView([pos.coords.latitude,pos.coords.longitude],16);$('locate').disabled=false},err=>{const msg=err.code===1?'Location permission দেওয়া হয়নি।':err.code===3?'Location পেতে সময় শেষ হয়েছে।':'বর্তমান Location পাওয়া যায়নি।';alert(msg);$('locate').disabled=false},{enableHighAccuracy:true,timeout:12000,maximumAge:60000})};
+$('adminToggle').onclick=()=>{$('admin').hidden=!$('admin').hidden;if(!$('admin').hidden)setTimeout(()=>map.invalidateSize(),100)};
+$('login').onclick=()=>{if($('pin').value==='2468'){$('adminForm').hidden=false;render();alert('Demo Admin Login সফল')}else alert('ভুল PIN')};
+$('pick').onclick=()=>{picking=true;$('pickStatus').textContent='এখন Map-এর নির্দিষ্ট জায়গায় ক্লিক করো…';alert('এবার Map-এর সঠিক জায়গায় ক্লিক করো।')};
+map.on('click',e=>{if(!picking)return;picking=false;$('lat').value=e.latlng.lat.toFixed(6);$('lng').value=e.latlng.lng.toFixed(6);$('pickStatus').textContent='Location বাছাই হয়েছে। এখন Add Location চাপো।'});
+$('save').onclick=()=>{const name=$('clubName').value.trim(),lat=Number($('lat').value),lng=Number($('lng').value),category=$('category').value;if(!name)return alert('Location-এর নাম লিখো।');if($('lat').value.trim()===''||$('lng').value.trim()===''||!Number.isFinite(lat)||!Number.isFinite(lng)||Math.abs(lat)>90||Math.abs(lng)>180)return alert('Map থেকে Location বেছে নাও অথবা সঠিক latitude/longitude দাও।');if(!Object.hasOwn(labels,category))return alert('সঠিক Category বেছে নাও।');const duplicate=points.some(p=>p.name.toLocaleLowerCase()===name.toLocaleLowerCase()&&p.category===category&&Math.abs(p.lat-lat)<0.00001&&Math.abs(p.lng-lng)<0.00001);if(duplicate)return alert('এই Location আগে থেকেই যোগ করা আছে।');const old=points;points=[...points,{id:Date.now()+'-'+Math.random().toString(36).slice(2,7),name,theme:$('themeName').value.trim(),category,lat,lng}];if(!persist()){points=old;return}$('clubName').value='';$('themeName').value='';$('lat').value='';$('lng').value='';$('pickStatus').textContent='Location সফলভাবে Save হয়েছে।';render();map.setView([lat,lng],16);alert('Location যোগ হয়েছে!')};
+render();
+render();
+</script>
+</body></html>
