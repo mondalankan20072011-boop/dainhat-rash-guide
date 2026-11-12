@@ -44,4 +44,16 @@ $("adminToggle").onclick=()=>{$("admin").classList.remove("hidden");$("admin").s
 $("login").onclick=()=>{if($("pin").value==="2468"){$("loginArea").classList.add("hidden");$("editor").classList.remove("hidden")}else alert("ভুল PIN")};
 $("pick").onclick=()=>{picking=true;alert("এবার Map-এর সঠিক জায়গায় ক্লিক করো")};map.on("click",e=>{if(picking){picking=false;$("lat").value=e.latlng.lat.toFixed(6);$("lng").value=e.latlng.lng.toFixed(6)}});
 $("save").onclick=()=>{let name=$("name").value.trim(),lat=$("lat").value===""?null:Number($("lat").value),lng=$("lng").value===""?null:Number($("lng").value);if(!name)return alert("নাম লিখো");if((lat===null)!==(lng===null)||lat!==null&&(!Number.isFinite(lat)||!Number.isFinite(lng)||Math.abs(lat)>90||Math.abs(lng)>180))return alert("সঠিক Latitude ও Longitude দাও");let obj={name,theme:$("theme").value.trim(),category:$("category").value,lat,lng};if(editing){Object.assign(data.find(p=>p.id===editing),obj);editing=null}else data.push({id:String(Date.now()),...obj});localStorage.setItem("drg_places",JSON.stringify(data));$("name").value=$("theme").value=$("lat").value=$("lng").value="";$("save").textContent="Add / Save Location";render();alert("সংরক্ষণ হয়েছে")};render();
+</script><script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js");
+  });
+}
+</script><script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js");
+  });
+}
 </script></body></html>
