@@ -1,0 +1,10 @@
+{
+  "name": "Dainhat Rash Guide",
+  "short_name": "Rash Guide",
+  "description": "Dainhat Rash Guide 2026",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#064e3b",
+  "theme_color": "#064e3b",
+  "icons": []
+}
